@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OutreachAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    :root {
+      --bg: #080808; --surface: #111111; --card: #1a1a1a; --border: #222222;
+      --accent: #6366f1; --accent-hover: #4f46e5; --success: #10b981;
+      --warning: #f59e0b; --error: #ef4444; --text: #f9fafb;
+      --text2: #9ca3af; --muted: #4b5563;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, sans-serif; background: var(--bg); color: var(--text); }
+    .nav { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); background: var(--surface); position:sticky; top:0; z-index:10; }
+    .logo { font-weight:700; }
+    .top-actions { display:flex; gap:8px; align-items:center; }
+    .badge { padding:6px 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; }
+    .connected { color: var(--success); }
+    .not-connected { color: var(--error); }
+    .layout { display:grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 65px); }
+    .sidebar { border-right:1px solid var(--border); background: var(--surface); padding:14px; }
+    .main { padding:20px; }
+    .card { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; }
+    button, .btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-weight: 600; }
+    button:hover, .btn:hover { background: var(--accent-hover); }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    input, textarea { width:100%; background:#0f0f0f; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px; }
+    textarea { min-height: 110px; resize: vertical; }
+    .muted { color: var(--text2); font-size: 13px; }
+    .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .hidden { display:none !important; }
+    .campaign-item { cursor:pointer; }
+    .campaign-item.active { border-color: var(--accent); }
+    .progress { height:10px; border-radius:999px; overflow:hidden; background:#0f0f0f; border:1px solid var(--border); }
+    .progress > div { height:100%; width:0%; background: var(--accent); transition: width .2s; }
+    .lead-row { display:grid; grid-template-columns:2fr 2fr auto; gap:10px; align-items:center; }
+    .status { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); }
+    .toast-wrap { position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:99; }
+    .toast { border:1px solid var(--border); background:var(--card); padding:10px 12px; border-radius:10px; min-width:220px; }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; justify-content:center; align-items:center; z-index:30; }
+    .modal-card { max-width:640px; width:95%; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+    @media (max-width: 980px) { .layout { grid-template-columns:1fr; } .sidebar { border-right:0; border-bottom:1px solid var(--border);} }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <div class="logo">⚡ OutreachAI</div>
+    <div class="top-actions">
+      <div id="gmailBadge" class="badge not-connected">🔴 Not Connected</div>
+      <button id="connectGmailBtn" type="button">Connect Gmail</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <button style="width:100%;" id="newCampaignBtn">➕ New Campaign</button>
+      <div style="margin-top:12px;" id="campaignList"></div>
+    </aside>
+
+    <main class="main">
+      <section id="welcomeView" class="card">
+        <h2 style="margin:0 0 8px;">⚡ AI Cold Outreach Personaliser</h2>
+        <p class="muted">Upload leads, AI researches each company and writes personalised emails in minutes.</p>
+        <button id="createFirstBtn">➕ Create Your First Campaign</button>
+        <div class="grid-2" style="margin-top:14px;">
+          <div class="card"><div class="muted">Total Campaigns</div><div id="statCampaigns">0</div></div>
+          <div class="card"><div class="muted">Total Leads</div><div id="statLeads">0</div></div>
+        </div>
+      </section>
+
+      <section id="newCampaignView" class="card hidden">
+        <h3>Create Campaign</h3>
+        <div class="grid-2">
+          <div><div class="muted">Campaign Name</div><input id="campaignName" /></div>
+          <div><div class="muted">Subject Line Template</div><input id="subjectTemplate" placeholder="e.g. Quick idea for {company}" /></div>
+        </div>
+        <div style="margin-top:8px;"><div class="muted">What are you offering?</div><textarea id="offerInput"></textarea></div>
+        <div style="margin-top:8px;"><div class="muted">Tone Instructions</div><textarea id="toneInput"></textarea></div>
+        <button id="createCampaignSubmit" style="margin-top:10px;">Create Campaign →</button>
+      </section>
+
+      <section id="setupView" class="card hidden">
+        <h3 id="setupName">Campaign Setup</h3>
+        <div class="muted">CSV must have columns: name, company, website | optional: role, email</div>
+        <div style="display:flex; gap:8px; margin:10px 0;">
+          <input type="file" id="csvInput" accept=".csv" />
+          <button class="secondary" id="sampleCsvBtn">Download Sample CSV</button>
+        </div>
+        <div id="leadsReady" class="muted">0 leads ready</div>
+        <div id="leadsPreview" class="card"></div>
+        <button id="runCampaignBtn" disabled>⚡ Generate Emails</button>
+      </section>
+
+      <section id="processingView" class="card hidden">
+        <h3>Processing Campaign</h3>
+        <div class="card"><strong>🔍 Researching Companies</strong><div class="progress"><div id="scrapeBar"></div></div><div id="scrapeFeed" class="muted"></div></div>
+        <div class="card"><strong>✍️ Writing Personalised Emails</strong><div class="progress"><div id="genBar"></div></div><div id="genFeed" class="muted"></div></div>
+        <div id="overallProgress" class="muted">0 of 0 complete</div>
+      </section>
+
+      <section id="resultsView" class="hidden">
+        <div class="card" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+          <div>
+            <h3 id="resultsTitle" style="margin:0;"></h3>
+            <div id="resultsStats" class="muted"></div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="exportBtn" class="secondary">📥 Export CSV</button>
+            <button id="sendAllBtn">📧 Send All</button>
+          </div>
+        </div>
+        <div id="leadsList"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="gmailModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Gmail Setup</h3>
+      <pre class="muted" style="white-space:pre-wrap;">Step 1: Go to console.cloud.google.com
+Step 2: Create a new project
+Step 3: Enable the Gmail API
+Step 4: Go to Credentials → Create OAuth 2.0 Client ID
+Step 5: Application type: Desktop App
+Step 6: Download credentials.json
+Step 7: Place credentials.json in the app folder
+Step 8: Click Connect below</pre>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="closeGmailModal" class="secondary">Cancel</button>
+        <button id="startGmailConnect">🔗 Connect Gmail</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-card">
+      <h3>Delete Campaign</h3>
+      <p class="muted">Are you sure? This cannot be undone.</p>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="cancelDelete" class="secondary">Cancel</button>
+        <button id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap"></div>
+
+  <script>
+    const state = { campaigns: [], activeCampaign: null, deletingId: null, processing: false };
+    const socket = io();
+
+    const views = ["welcomeView", "newCampaignView", "setupView", "processingView", "resultsView"];
+    const showView = (id) => views.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
+    const toast = (msg) => {
+      const node = document.createElement("div");
+      node.className = "toast";
+      node.textContent = msg;
+      document.getElementById("toastWrap").appendChild(node);
+      setTimeout(() => node.remove(), 3000);
+    };
+
+    async function api(url, method = "GET", body = null, isForm = false) {
+      const res = await fetch(url, {
+        method,
+        headers: isForm ? undefined : { "Content-Type": "application/json" },
+        body: body ? (isForm ? body : JSON.stringify(body)) : undefined
+      });
+      return res.json();
+    }
+
+    function renderCampaigns() {
+      const wrap = document.getElementById("campaignList");
+      wrap.innerHTML = "";
+      if (!state.campaigns.length) {
+        wrap.innerHTML = `<div class="muted" style="margin-top:8px;">No campaigns yet</div>`;
+      }
+      state.campaigns.forEach(c => {
+        const item = document.createElement("div");
+        item.className = `card campaign-item ${state.activeCampaign && c.id === state.activeCampaign.id ? "active" : ""}`;
+        item.innerHTML = `<strong>${c.name}</strong><div class="muted">${(c.leads || []).length} leads • ${new Date(c.created_at).toLocaleDateString()}</div><div class="muted">${c.status || "draft"}</div><button class="secondary" data-del="${c.id}" style="margin-top:8px;">Delete</button>`;
+        item.onclick = (e) => {
+          if (e.target.dataset.del) return;
+          if (state.processing) return toast("Cannot navigate away while processing");
+          loadCampaign(c.id);
+        };
+        item.querySelector("[data-del]")?.addEventListener("click", () => {
+          state.deletingId = c.id;
+          document.getElementById("deleteModal").classList.remove("hidden");
+        });
+        wrap.appendChild(item);
+      });
+
+      const totalLeads = state.campaigns.reduce((n, c) => n + ((c.leads || []).length), 0);
+      document.getElementById("statCampaigns").textContent = String(state.campaigns.length);
+      document.getElementById("statLeads").textContent = String(totalLeads);
+    }
+
+    function renderSetup(c) {
+      document.getElementById("setupName").textContent = c.name;
+      document.getElementById("leadsReady").textContent = `${(c.leads || []).length} leads ready`;
+      const preview = document.getElementById("leadsPreview");
+      preview.innerHTML = (c.leads || []).slice(0, 8).map(l => `${l.name} | ${l.company} | ${l.website} | ${l.role || "Decision Maker"} | ${l.email || ""}`).join("<br>") || "<span class='muted'>No leads uploaded yet.</span>";
+      document.getElementById("runCampaignBtn").disabled = !(c.leads || []).length;
+      showView("setupView");
+    }
+
+    function statusLabel(lead) {
+      if (lead.sent) return "✅ Sent";
+      if (lead.generation_status === "generated") return "🟢 Ready";
+      if (lead.generation_status === "failed" || lead.scrape_status === "failed") return "🔴 Failed";
+      if (lead.generation_status === "pending" && lead.scrape_status === "pending") return "⚪ Pending";
+      return "🟡 Generating";
+    }
+
+    function renderResults(c) {
+      const leads = c.leads || [];
+      document.getElementById("resultsTitle").textContent = c.name;
+      document.getElementById("resultsStats").textContent = `${leads.length} leads | ${leads.filter(l => l.generation_status === "generated").length} generated | ${leads.filter(l => l.sent).length} sent`;
+      const list = document.getElementById("leadsList");
+      list.innerHTML = "";
+      leads.forEach(lead => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="lead-row">
+            <div><strong>${lead.company}</strong><div class="muted">${lead.name} ${lead.role ? "• " + lead.role : ""}</div></div>
+            <div>${lead.subject || "(no subject)"}</div>
+            <div><span class="status">${statusLabel(lead)}</span></div>
+          </div>
+          <details style="margin-top:8px;">
+            <summary>Expand</summary>
+            <div class="muted" style="margin:8px 0 4px;">Subject</div>
+            <input data-subject value="${(lead.subject || "").replaceAll('"','&quot;')}" />
+            <div class="muted" style="margin:8px 0 4px;">Body</div>
+            <textarea data-body>${lead.generated_email || ""}</textarea>
+            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+              <button data-regenerate>🔄 Regenerate</button>
+              <button data-copy class="secondary">📋 Copy</button>
+              <button data-send>📧 Send</button>
+            </div>
+            <details style="margin-top:8px;"><summary>🔍 View research</summary><div class="muted">${lead.scraped_content || "No scraped content"}</div></details>
+          </details>`;
+
+        card.querySelector("[data-copy]").onclick = async () => {
+          await navigator.clipboard.writeText(card.querySelector("[data-body]").value || "");
+          toast("📋 Email copied to clipboard");
+        };
+        card.querySelector("[data-regenerate]").onclick = async () => {
+          const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/regenerate`, "POST", {});
+          if (res.success) {
+            toast("✅ Email regenerated");
+            await loadCampaign(c.id);
+          } else toast("❌ " + (res.error || "Regeneration failed"));
+        };
+        card.querySelector("[data-send]").onclick = async () => {
+          const entered = prompt("Recipient email:", lead.email || "");
+          if (entered === null) return;
+          lead.subject = card.querySelector("[data-subject]").value;
+          lead.generated_email = card.querySelector("[data-body]").value;
+          const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/send`, "POST", { email: entered });
+          if (res.success) { toast(`✅ Sent to ${entered}`); await loadCampaign(c.id); } else toast("❌ " + (res.error || "Send failed"));
+        };
+        list.appendChild(card);
+      });
+      showView("resultsView");
+    }
+
+    async function loadCampaigns() {
+      const data = await api("/api/campaigns");
+      state.campaigns = data.campaigns || [];
+      renderCampaigns();
+    }
+
+    async function loadCampaign(id) {
+      const data = await api(`/api/campaign/${id}`);
+      state.activeCampaign = data.campaign;
+      renderCampaigns();
+      const c = state.activeCampaign;
+      if (!c) return showView("welcomeView");
+      if ((c.status === "completed") || (c.leads || []).some(l => l.generated_email)) return renderResults(c);
+      if (c.status === "running") { showView("processingView"); state.processing = true; return; }
+      return renderSetup(c);
+    }
+
+    async function checkGmail() {
+      const data = await api("/api/gmail/status");
+      const badge = document.getElementById("gmailBadge");
+      const btn = document.getElementById("connectGmailBtn");
+      if (data.connected) {
+        badge.textContent = "🟢 Connected";
+        badge.className = "badge connected";
+        btn.classList.add("hidden");
+      } else {
+        badge.textContent = "🔴 Not Connected";
+        badge.className = "badge not-connected";
+        btn.classList.remove("hidden");
+      }
+    }
+
+    socket.on("scrape_progress", (evt) => {
+      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+      const pct = evt.total ? (evt.current / evt.total) * 100 : 0;
+      document.getElementById("scrapeBar").style.width = `${pct}%`;
+      const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
+      document.getElementById("scrapeFeed").innerHTML = `${icon} ${evt.company} — ${evt.status}<br>` + document.getElementById("scrapeFeed").innerHTML;
+      document.getElementById("overallProgress").textContent = `${evt.current} of ${evt.total} complete`;
+    });
+
+    socket.on("generation_progress", (evt) => {
+      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+      const pct = evt.total ? (evt.current / evt.total) * 100 : 0;
+      document.getElementById("genBar").style.width = `${pct}%`;
+      const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
+      const preview = evt.preview ? ` — ${evt.preview}` : "";
+      document.getElementById("genFeed").innerHTML = `${icon} ${evt.company} — ${evt.status}${preview}<br>` + document.getElementById("genFeed").innerHTML;
+      document.getElementById("overallProgress").textContent = `${evt.current} of ${evt.total} complete`;
+    });
+
+    socket.on("campaign_complete", async (evt) => {
+      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+      state.processing = false;
+      toast("✅ Campaign complete");
+      await loadCampaign(state.activeCampaign.id);
+      await loadCampaigns();
+    });
+
+    document.getElementById("newCampaignBtn").onclick = () => { if (!state.processing) showView("newCampaignView"); };
+    document.getElementById("createFirstBtn").onclick = () => showView("newCampaignView");
+    document.getElementById("createCampaignSubmit").onclick = async () => {
+      const body = {
+        name: document.getElementById("campaignName").value || "Untitled Campaign",
+        offer: document.getElementById("offerInput").value,
+        tone_instructions: document.getElementById("toneInput").value,
+        subject_template: document.getElementById("subjectTemplate").value
+      };
+      const res = await api("/api/campaign/create", "POST", body);
+      if (res.success) {
+        toast("✅ Campaign created");
+        await loadCampaigns();
+        await loadCampaign(res.campaign_id);
+      }
+    };
+
+    document.getElementById("csvInput").addEventListener("change", async (e) => {
+      if (!state.activeCampaign || !e.target.files?.[0]) return;
+      const fd = new FormData();
+      fd.append("file", e.target.files[0]);
+      const res = await api(`/api/campaign/${state.activeCampaign.id}/upload`, "POST", fd, true);
+      if (res.success) { toast(`✅ ${res.leads_count} leads uploaded`); await loadCampaign(state.activeCampaign.id); await loadCampaigns(); }
+      else toast("❌ " + (res.error || "Upload failed"));
+    });
+
+    document.getElementById("runCampaignBtn").onclick = async () => {
+      if (!state.activeCampaign) return;
+      state.processing = true;
+      document.getElementById("scrapeFeed").innerHTML = "";
+      document.getElementById("genFeed").innerHTML = "";
+      showView("processingView");
+      const res = await api(`/api/campaign/${state.activeCampaign.id}/run`, "POST", {});
+      if (!res.success) { state.processing = false; toast("❌ " + (res.error || "Failed to start")); }
+    };
+
+    document.getElementById("sampleCsvBtn").onclick = () => {
+      const content = `name,company,website,role,email\nJohn Smith,Acme Corp,https://acmecorp.com,CEO,john@acmecorp.com\nSarah Jones,TechStart,https://techstart.io,Founder,sarah@techstart.io\nMike Chen,GrowthLab,https://growthlab.co,Marketing Director,`;
+      const blob = new Blob([content], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "sample_leads.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    document.getElementById("exportBtn").onclick = () => {
+      if (!state.activeCampaign) return;
+      window.location.href = `/api/campaign/${state.activeCampaign.id}/export`;
+    };
+
+    document.getElementById("sendAllBtn").onclick = async () => {
+      if (!state.activeCampaign) return;
+      const res = await api(`/api/campaign/${state.activeCampaign.id}/send-all`, "POST", {});
+      if (res.success) toast(`✅ Sent ${res.sent}, failed ${res.failed}`);
+      else toast("❌ " + (res.error || "Send all failed"));
+      await loadCampaign(state.activeCampaign.id);
+    };
+
+    document.getElementById("connectGmailBtn").onclick = () => document.getElementById("gmailModal").classList.remove("hidden");
+    document.getElementById("closeGmailModal").onclick = () => document.getElementById("gmailModal").classList.add("hidden");
+    document.getElementById("startGmailConnect").onclick = () => window.location.href = "/api/gmail/auth";
+
+    document.getElementById("cancelDelete").onclick = () => document.getElementById("deleteModal").classList.add("hidden");
+    document.getElementById("confirmDelete").onclick = async () => {
+      if (!state.deletingId) return;
+      const res = await fetch(`/api/campaign/${state.deletingId}`, { method: "DELETE" }).then(r => r.json());
+      if (res.success) {
+        toast("✅ Campaign deleted");
+        if (state.activeCampaign && state.activeCampaign.id === state.deletingId) state.activeCampaign = null;
+        await loadCampaigns();
+        showView(state.activeCampaign ? "setupView" : "welcomeView");
+      } else toast("❌ " + (res.error || "Delete failed"));
+      document.getElementById("deleteModal").classList.add("hidden");
+    };
+
+    (async function init() {
+      await checkGmail();
+      await loadCampaigns();
+      showView("welcomeView");
+    })();
+  </script>
+</body>
+</html>

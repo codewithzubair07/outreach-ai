@@ -1,0 +1,7 @@
+.env
+token.json
+credentials.json
+campaigns.json
+uploads/*.csv
+__pycache__/
+*.pyc
