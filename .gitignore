@@ -5,3 +5,4 @@ campaigns.json
 uploads/*.csv
 __pycache__/
 *.pyc
+".idea/" 
