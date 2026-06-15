@@ -549,7 +549,8 @@ Step 8: Click Connect below</div>
 
       // Convert to CSV blob and upload
       const headers = ["name","company","website","role","email"];
-      const rows = res.leads.map(l => `${l.name},${l.company},${l.website},${l.role},${l.email}`);
+      const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const rows = res.leads.map(l => [l.name, l.company, l.website, l.role, l.email].map(esc).join(","));
       const csv = [headers.join(","), ...rows].join("\n");
       const blob = new Blob([csv], {type:"text/csv"});
       const fd = new FormData();
