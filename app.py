@@ -21,7 +21,8 @@ from store import (
     update_campaign,
     update_lead,
 )
-
+from lead_finder import find_leads, find_email_for_domain
+from followup import check_and_send_followups, start_followup_scheduler
 
 load_dotenv()
 
@@ -74,10 +75,14 @@ def _campaign_worker(campaign_id):
             running_campaigns.discard(campaign_id)
 
 
+# ─── Pages ──────────────────────────────────────────────────
+
 @app.get("/")
 def index():
     return render_template("index.html")
 
+
+# ─── Campaigns ──────────────────────────────────────────────
 
 @app.post("/api/campaign/create")
 def api_create_campaign():
@@ -114,36 +119,31 @@ def api_upload_csv(campaign_id):
         frame = pd.read_csv(temp_path)
         required_columns = {"name", "company", "website"}
         if not required_columns.issubset(set(frame.columns)):
-            return (
-                jsonify(
-                    {
-                        "success": False,
-                        "error": "CSV must contain columns: name, company, website",
-                    }
-                ),
-                400,
-            )
+            return jsonify({
+                "success": False,
+                "error": "CSV must contain columns: name, company, website",
+            }), 400
 
         leads = []
         for _, row in frame.iterrows():
-            leads.append(
-                {
-                    "id": str(uuid4()),
-                    "name": str(row.get("name", "")).strip(),
-                    "company": str(row.get("company", "")).strip(),
-                    "website": str(row.get("website", "")).strip(),
-                    "role": str(row.get("role", "Decision Maker") or "Decision Maker").strip(),
-                    "scraped_content": "",
-                    "scrape_status": "pending",
-                    "email": str(row.get("email", "") or "").strip(),
-                    "generated_email": "",
-                    "subject": "",
-                    "generation_status": "pending",
-                    "sent": False,
-                    "sent_at": None,
-                    "error": None,
-                }
-            )
+            leads.append({
+                "id": str(uuid4()),
+                "name": str(row.get("name", "")).strip(),
+                "company": str(row.get("company", "")).strip(),
+                "website": str(row.get("website", "")).strip(),
+                "role": str(row.get("role", "Decision Maker") or "Decision Maker").strip(),
+                "scraped_content": "",
+                "scrape_status": "pending",
+                "email": str(row.get("email", "") or "").strip(),
+                "generated_email": "",
+                "subject": "",
+                "generation_status": "pending",
+                "sent": False,
+                "sent_at": None,
+                "followup_sent": False,
+                "followup_sent_at": None,
+                "error": None,
+            })
 
         campaign["leads"] = leads
         campaign["status"] = "ready"
@@ -183,7 +183,7 @@ def api_get_campaign(campaign_id):
 
 @app.get("/api/campaigns")
 def api_get_campaigns():
-    campaigns = [_serialize_campaign_light(campaign) for campaign in get_all_campaigns()]
+    campaigns = [_serialize_campaign_light(c) for c in get_all_campaigns()]
     return jsonify({"campaigns": campaigns})
 
 
@@ -193,7 +193,7 @@ def api_regenerate(campaign_id, lead_id):
     if not campaign:
         return jsonify({"success": False, "error": "Campaign not found"}), 404
 
-    lead = next((item for item in campaign.get("leads", []) if item.get("id") == lead_id), None)
+    lead = next((l for l in campaign.get("leads", []) if l.get("id") == lead_id), None)
     if not lead:
         return jsonify({"success": False, "error": "Lead not found"}), 404
 
@@ -214,7 +214,7 @@ def api_send_single(campaign_id, lead_id):
     if not campaign:
         return jsonify({"success": False, "error": "Campaign not found"}), 404
 
-    lead = next((item for item in campaign.get("leads", []) if item.get("id") == lead_id), None)
+    lead = next((l for l in campaign.get("leads", []) if l.get("id") == lead_id), None)
     if not lead:
         return jsonify({"success": False, "error": "Lead not found"}), 404
 
@@ -289,20 +289,19 @@ def api_export(campaign_id):
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["name", "company", "website", "role", "email", "subject", "body", "sent"])
+    writer.writerow(["name", "company", "website", "role", "email", "subject", "body", "sent", "followup_sent"])
     for lead in campaign.get("leads", []):
-        writer.writerow(
-            [
-                lead.get("name", ""),
-                lead.get("company", ""),
-                lead.get("website", ""),
-                lead.get("role", ""),
-                lead.get("email", ""),
-                lead.get("subject", ""),
-                lead.get("generated_email", ""),
-                lead.get("sent", False),
-            ]
-        )
+        writer.writerow([
+            lead.get("name", ""),
+            lead.get("company", ""),
+            lead.get("website", ""),
+            lead.get("role", ""),
+            lead.get("email", ""),
+            lead.get("subject", ""),
+            lead.get("generated_email", ""),
+            lead.get("sent", False),
+            lead.get("followup_sent", False),
+        ])
 
     output.seek(0)
     filename = f"{campaign.get('name', 'campaign').replace(' ', '_')}_{datetime.now().date()}.csv"
@@ -321,6 +320,8 @@ def api_delete_campaign(campaign_id):
         return jsonify({"success": False, "error": "Campaign not found"}), 404
     return jsonify({"success": True})
 
+
+# ─── Gmail ──────────────────────────────────────────────────
 
 @app.get("/api/gmail/auth")
 def api_gmail_auth():
@@ -344,9 +345,77 @@ def api_gmail_disconnect():
     return jsonify({"success": True})
 
 
+# ─── Lead Finder ────────────────────────────────────────────
+
+@app.post("/api/leads/find")
+def api_find_leads():
+    payload = request.get_json(force=True)
+    query = payload.get("query", "").strip()
+    count = int(payload.get("count", 10))
+
+    if not query:
+        return jsonify({"success": False, "error": "Query is required"}), 400
+
+    leads = find_leads(query, count)
+    return jsonify({"success": True, "leads": leads, "count": len(leads)})
+
+
+@app.post("/api/leads/find-email")
+def api_find_email():
+    payload = request.get_json(force=True)
+    domain = payload.get("domain", "").strip()
+    if not domain:
+        return jsonify({"success": False, "error": "Domain is required"}), 400
+    email = find_email_for_domain(domain)
+    return jsonify({"success": True, "email": email})
+
+
+@app.post("/api/campaign/<campaign_id>/enrich-emails")
+def api_enrich_emails(campaign_id):
+    """Auto-guess emails for all leads missing an email address."""
+    campaign = get_campaign(campaign_id)
+    if not campaign:
+        return jsonify({"success": False, "error": "Campaign not found"}), 404
+
+    enriched = 0
+    for lead in campaign.get("leads", []):
+        if lead.get("email"):
+            continue
+        website = lead.get("website", "")
+        if not website:
+            continue
+        import re
+        domain = re.sub(r"https?://(www\.)?", "", website).split("/")[0]
+        if domain:
+            lead["email"] = find_email_for_domain(domain)
+            enriched += 1
+
+    update_campaign(campaign_id, campaign)
+    return jsonify({"success": True, "enriched": enriched})
+
+
+# ─── Follow-ups ─────────────────────────────────────────────
+
+@app.post("/api/followups/run")
+def api_run_followups():
+    payload = request.get_json(force=True)
+    days = int(payload.get("days", 3))
+    count = check_and_send_followups(days=days)
+    return jsonify({"success": True, "followups_sent": count})
+
+
+@app.post("/api/followups/start-scheduler")
+def api_start_followup_scheduler():
+    payload = request.get_json(force=True)
+    days = int(payload.get("days", 3))
+    start_followup_scheduler(days=days)
+    return jsonify({"success": True, "message": f"Follow-up scheduler started ({days} day delay)"})
+
+
+# ─── Main ────────────────────────────────────────────────────
+
 if __name__ == "__main__":
-    print(
-        """
+    print("""
 ============================================
 ⚡ OUTREACHAI — COLD EMAIL PERSONALISER
 ============================================
@@ -367,6 +436,6 @@ Setup checklist:
 
 Running at: http://localhost:5000
 ============================================
-"""
-    )
+""")
+    start_followup_scheduler(days=3)
     socketio.run(app, host="0.0.0.0", port=5000, debug=False)

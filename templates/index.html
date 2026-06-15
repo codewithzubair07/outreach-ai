@@ -15,402 +15,757 @@
       --warning: #f59e0b; --error: #ef4444; --text: #f9fafb;
       --text2: #9ca3af; --muted: #4b5563;
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Inter, sans-serif; background: var(--bg); color: var(--text); }
-    .nav { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); background: var(--surface); position:sticky; top:0; z-index:10; }
-    .logo { font-weight:700; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* NAV */
+    .nav { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:10; }
+    .logo { font-weight:700; font-size:16px; }
     .top-actions { display:flex; gap:8px; align-items:center; }
-    .badge { padding:6px 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; }
-    .connected { color: var(--success); }
-    .not-connected { color: var(--error); }
-    .layout { display:grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 65px); }
-    .sidebar { border-right:1px solid var(--border); background: var(--surface); padding:14px; }
-    .main { padding:20px; }
-    .card { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:10px; }
-    button, .btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-weight: 600; }
-    button:hover, .btn:hover { background: var(--accent-hover); }
-    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    input, textarea { width:100%; background:#0f0f0f; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px; }
-    textarea { min-height: 110px; resize: vertical; }
-    .muted { color: var(--text2); font-size: 13px; }
-    .grid-2 { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .badge { padding:5px 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; }
+    .connected { color:var(--success); } .not-connected { color:var(--error); }
+
+    /* LAYOUT */
+    .layout { display:grid; grid-template-columns:270px 1fr; min-height:calc(100vh - 57px); }
+    .sidebar { border-right:1px solid var(--border); background:var(--surface); padding:12px; overflow-y:auto; }
+    .main { padding:20px; overflow-y:auto; }
+
+    /* CARDS */
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:12px; }
+    .card-flat { background:#0f0f0f; border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:8px; }
+
+    /* BUTTONS */
+    button, .btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:9px 14px; cursor:pointer; font-weight:600; font-size:13px; font-family:Inter,sans-serif; }
+    button:hover { background:var(--accent-hover); }
+    button.secondary { background:transparent; border:1px solid var(--border); color:var(--text); }
+    button.secondary:hover { border-color:var(--accent); color:var(--accent); }
+    button.success-btn { background:var(--success); }
+    button.danger { background:var(--error); }
+    button:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* INPUTS */
+    input, textarea, select { width:100%; background:#0f0f0f; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:9px 11px; font-family:Inter,sans-serif; font-size:13px; }
+    input:focus, textarea:focus, select:focus { outline:none; border-color:var(--accent); }
+    textarea { min-height:100px; resize:vertical; }
+    select { cursor:pointer; }
+    label { display:block; color:var(--text2); font-size:12px; margin-bottom:4px; margin-top:10px; }
+
+    /* UTILS */
+    .muted { color:var(--text2); font-size:13px; }
+    .small { font-size:12px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+    .flex { display:flex; gap:8px; align-items:center; }
+    .flex-wrap { display:flex; gap:8px; flex-wrap:wrap; }
     .hidden { display:none !important; }
-    .campaign-item { cursor:pointer; }
-    .campaign-item.active { border-color: var(--accent); }
-    .progress { height:10px; border-radius:999px; overflow:hidden; background:#0f0f0f; border:1px solid var(--border); }
-    .progress > div { height:100%; width:0%; background: var(--accent); transition: width .2s; }
-    .lead-row { display:grid; grid-template-columns:2fr 2fr auto; gap:10px; align-items:center; }
-    .status { font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); }
+    .mt { margin-top:10px; }
+    .mb { margin-bottom:10px; }
+    .gap { gap:8px; }
+    h3 { font-size:15px; margin-bottom:6px; }
+    h2 { font-size:18px; margin-bottom:8px; }
+
+    /* SIDEBAR */
+    .campaign-item { cursor:pointer; transition:border-color .15s; }
+    .campaign-item:hover { border-color:#444; }
+    .campaign-item.active { border-color:var(--accent); }
+    .camp-name { font-weight:600; font-size:14px; margin-bottom:2px; }
+    .camp-meta { color:var(--text2); font-size:12px; }
+
+    /* PROGRESS */
+    .progress { height:8px; border-radius:999px; overflow:hidden; background:#0f0f0f; border:1px solid var(--border); margin:6px 0; }
+    .progress > div { height:100%; width:0%; background:var(--accent); transition:width .2s; }
+
+    /* LEAD CARDS */
+    .lead-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:8px; }
+    .lead-top { display:grid; grid-template-columns:2fr 2fr auto; gap:10px; align-items:center; }
+    .status-pill { font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); white-space:nowrap; }
+
+    /* TOAST */
     .toast-wrap { position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:99; }
-    .toast { border:1px solid var(--border); background:var(--card); padding:10px 12px; border-radius:10px; min-width:220px; }
-    .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; justify-content:center; align-items:center; z-index:30; }
-    .modal-card { max-width:640px; width:95%; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
-    @media (max-width: 980px) { .layout { grid-template-columns:1fr; } .sidebar { border-right:0; border-bottom:1px solid var(--border);} }
+    .toast { border:1px solid var(--border); background:var(--card); padding:10px 14px; border-radius:10px; min-width:220px; font-size:13px; animation:fadeIn .2s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    /* MODAL */
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,.65); display:flex; justify-content:center; align-items:center; z-index:30; }
+    .modal-card { max-width:580px; width:95%; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+
+    /* SECTION TABS */
+    .tab-bar { display:flex; gap:4px; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:0; }
+    .tab-btn { background:transparent; border:none; color:var(--text2); padding:8px 14px; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer; font-size:13px; font-weight:500; }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+    /* LEAD FINDER */
+    .finder-box { background:#0d0d0d; border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:12px; }
+    .finder-input-row { display:flex; gap:8px; margin-top:8px; }
+    .finder-input-row input { flex:1; }
+    .finder-input-row input.num { width:70px; flex:none; }
+
+    /* FOLLOWUP */
+    .followup-box { background:#0d0d0d; border:1px dashed var(--border); border-radius:10px; padding:14px; margin-bottom:12px; }
+
+    /* FEED */
+    .feed { max-height:200px; overflow-y:auto; background:#0a0a0a; border-radius:8px; padding:8px; font-size:12px; color:var(--text2); }
+    .feed div { padding:2px 0; border-bottom:1px solid #1a1a1a; }
+
+    /* STATS ROW */
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; }
+    .stat-card .num { font-size:22px; font-weight:700; color:var(--accent); }
+    .stat-card .lbl { font-size:11px; color:var(--text2); margin-top:2px; }
+
+    /* SPINNER */
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; vertical-align:middle; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    @media (max-width:900px) {
+      .layout { grid-template-columns:1fr; }
+      .sidebar { border-right:0; border-bottom:1px solid var(--border); }
+      .lead-top { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
-  <div class="nav">
-    <div class="logo">⚡ OutreachAI</div>
-    <div class="top-actions">
-      <div id="gmailBadge" class="badge not-connected">🔴 Not Connected</div>
-      <button id="connectGmailBtn" type="button">Connect Gmail</button>
-    </div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="logo">⚡ OutreachAI</div>
+  <div class="top-actions">
+    <div id="gmailBadge" class="badge not-connected">🔴 Not Connected</div>
+    <button id="connectGmailBtn" type="button">Connect Gmail</button>
   </div>
+</div>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <button style="width:100%;" id="newCampaignBtn">➕ New Campaign</button>
-      <div style="margin-top:12px;" id="campaignList"></div>
-    </aside>
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button style="width:100%;" id="newCampaignBtn">➕ New Campaign</button>
+    <div style="margin-top:12px;" id="campaignList"><div class="muted small" style="margin-top:8px;">No campaigns yet</div></div>
+  </aside>
 
-    <main class="main">
-      <section id="welcomeView" class="card">
-        <h2 style="margin:0 0 8px;">⚡ AI Cold Outreach Personaliser</h2>
-        <p class="muted">Upload leads, AI researches each company and writes personalised emails in minutes.</p>
-        <button id="createFirstBtn">➕ Create Your First Campaign</button>
-        <div class="grid-2" style="margin-top:14px;">
-          <div class="card"><div class="muted">Total Campaigns</div><div id="statCampaigns">0</div></div>
-          <div class="card"><div class="muted">Total Leads</div><div id="statLeads">0</div></div>
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- WELCOME -->
+    <section id="welcomeView" class="card">
+      <h2>⚡ AI Cold Outreach Personaliser</h2>
+      <p class="muted">Type a niche → AI finds companies, researches each one, writes personalised emails, sends them, and follows up automatically.</p>
+      <button id="createFirstBtn" style="margin-top:12px;">➕ Create Your First Campaign</button>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="stat-card"><div class="num" id="statCampaigns">0</div><div class="lbl">Campaigns</div></div>
+        <div class="stat-card"><div class="num" id="statLeads">0</div><div class="lbl">Total Leads</div></div>
+        <div class="stat-card"><div class="num" id="statSent">0</div><div class="lbl">Emails Sent</div></div>
+      </div>
+    </section>
+
+    <!-- NEW CAMPAIGN FORM -->
+    <section id="newCampaignView" class="card hidden">
+      <h3>➕ Create Campaign</h3>
+      <div class="grid-2">
+        <div>
+          <label>Campaign Name</label>
+          <input id="campaignName" placeholder="e.g. Web Design Outreach June" />
         </div>
-      </section>
-
-      <section id="newCampaignView" class="card hidden">
-        <h3>Create Campaign</h3>
-        <div class="grid-2">
-          <div><div class="muted">Campaign Name</div><input id="campaignName" /></div>
-          <div><div class="muted">Subject Line Template</div><input id="subjectTemplate" placeholder="e.g. Quick idea for {company}" /></div>
+        <div>
+          <label>Subject Line Template</label>
+          <input id="subjectTemplate" placeholder="e.g. Quick idea for {company}" />
         </div>
-        <div style="margin-top:8px;"><div class="muted">What are you offering?</div><textarea id="offerInput"></textarea></div>
-        <div style="margin-top:8px;"><div class="muted">Tone Instructions</div><textarea id="toneInput"></textarea></div>
-        <button id="createCampaignSubmit" style="margin-top:10px;">Create Campaign →</button>
-      </section>
+      </div>
+      <label>What are you offering?</label>
+      <textarea id="offerInput" placeholder="e.g. We build high-converting websites for e-commerce brands. Helped 30+ clients increase leads by 50%. Packages from $500."></textarea>
+      <label>Tone Instructions</label>
+      <textarea id="toneInput" placeholder="e.g. Write like a confident friendly founder. Short sentences. Reference something specific from their website in the first line. Never sound salesy. Max 150 words."></textarea>
+      <button id="createCampaignSubmit" style="margin-top:12px;">Create Campaign →</button>
+    </section>
 
-      <section id="setupView" class="card hidden">
-        <h3 id="setupName">Campaign Setup</h3>
-        <div class="muted">CSV must have columns: name, company, website | optional: role, email</div>
-        <div style="display:flex; gap:8px; margin:10px 0;">
-          <input type="file" id="csvInput" accept=".csv" />
-          <button class="secondary" id="sampleCsvBtn">Download Sample CSV</button>
-        </div>
-        <div id="leadsReady" class="muted">0 leads ready</div>
-        <div id="leadsPreview" class="card"></div>
-        <button id="runCampaignBtn" disabled>⚡ Generate Emails</button>
-      </section>
-
-      <section id="processingView" class="card hidden">
-        <h3>Processing Campaign</h3>
-        <div class="card"><strong>🔍 Researching Companies</strong><div class="progress"><div id="scrapeBar"></div></div><div id="scrapeFeed" class="muted"></div></div>
-        <div class="card"><strong>✍️ Writing Personalised Emails</strong><div class="progress"><div id="genBar"></div></div><div id="genFeed" class="muted"></div></div>
-        <div id="overallProgress" class="muted">0 of 0 complete</div>
-      </section>
-
-      <section id="resultsView" class="hidden">
-        <div class="card" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+    <!-- SETUP VIEW -->
+    <section id="setupView" class="hidden">
+      <div class="card">
+        <div class="flex" style="justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
           <div>
-            <h3 id="resultsTitle" style="margin:0;"></h3>
-            <div id="resultsStats" class="muted"></div>
+            <h2 id="setupName">Campaign Setup</h2>
+            <div class="muted" id="setupMeta"></div>
           </div>
-          <div style="display:flex; gap:8px;">
-            <button id="exportBtn" class="secondary">📥 Export CSV</button>
-            <button id="sendAllBtn">📧 Send All</button>
+          <div id="leadCountBadge" class="muted small"></div>
+        </div>
+      </div>
+
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('finder')">🔍 Find Leads</button>
+        <button class="tab-btn" onclick="switchTab('upload')">📂 Upload CSV</button>
+        <button class="tab-btn" onclick="switchTab('followup')">🔁 Follow-Up Settings</button>
+      </div>
+
+      <!-- TAB: FIND LEADS -->
+      <div id="tab-finder">
+        <div class="finder-box">
+          <div style="font-weight:600; margin-bottom:4px;">🔍 Auto Find Leads</div>
+          <div class="muted small">Type a niche and AI finds real companies automatically — no CSV needed.</div>
+          <div class="finder-input-row">
+            <input id="leadFinderQuery" type="text" placeholder="e.g. SaaS startups in London, marketing agencies in NYC" />
+            <input id="leadFinderCount" type="number" class="num" value="10" min="1" max="50" title="Number of leads" />
+            <button onclick="findLeads()" id="findLeadsBtn">🔍 Find</button>
+          </div>
+          <div id="finderStatus" class="muted small" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="finder-box" style="margin-top:0;">
+          <div style="font-weight:600; margin-bottom:4px;">📧 Auto Find Emails</div>
+          <div class="muted small">Guess work emails for all leads missing an email address.</div>
+          <button onclick="enrichEmails()" class="secondary" style="margin-top:8px;" id="enrichBtn">📧 Find Missing Emails</button>
+          <div id="enrichStatus" class="muted small" style="margin-top:6px;"></div>
+        </div>
+
+        <div id="leadsPreviewFinder"></div>
+        <button id="runCampaignBtnFinder" class="hidden success-btn" onclick="runCampaign()" style="width:100%; margin-top:8px;">⚡ Generate Emails for All Leads</button>
+      </div>
+
+      <!-- TAB: UPLOAD CSV -->
+      <div id="tab-upload" class="hidden">
+        <div class="card-flat">
+          <div class="muted small mb">CSV must have columns: <strong>name, company, website</strong> — optional: role, email</div>
+          <div class="flex flex-wrap">
+            <input type="file" id="csvInput" accept=".csv" style="flex:1; min-width:200px;" />
+            <button class="secondary" id="sampleCsvBtn">📥 Sample CSV</button>
           </div>
         </div>
-        <div id="leadsList"></div>
-      </section>
-    </main>
-  </div>
+        <div id="leadsPreview" class="card-flat hidden"></div>
+        <button id="runCampaignBtn" disabled onclick="runCampaign()" style="margin-top:10px; width:100%;">⚡ Generate Emails</button>
+      </div>
 
-  <div id="gmailModal" class="modal hidden">
-    <div class="modal-card">
-      <h3>Gmail Setup</h3>
-      <pre class="muted" style="white-space:pre-wrap;">Step 1: Go to console.cloud.google.com
+      <!-- TAB: FOLLOW-UP -->
+      <div id="tab-followup" class="hidden">
+        <div class="followup-box">
+          <div style="font-weight:600; margin-bottom:8px;">🔁 Auto Follow-Up Settings</div>
+          <div class="muted small mb">If a lead doesn't reply, OutreachAI will automatically send a follow-up email.</div>
+          <label>Follow up after how many days?</label>
+          <select id="followupDays" style="width:120px;">
+            <option value="1">1 day</option>
+            <option value="2">2 days</option>
+            <option value="3" selected>3 days</option>
+            <option value="5">5 days</option>
+            <option value="7">7 days</option>
+          </select>
+          <div class="flex flex-wrap mt">
+            <button onclick="startFollowupScheduler()" class="success-btn">✅ Enable Auto Follow-Up</button>
+            <button onclick="runFollowupsNow()" class="secondary">▶ Run Follow-Ups Now</button>
+          </div>
+          <div id="followupStatus" class="muted small" style="margin-top:8px;"></div>
+        </div>
+        <div class="card-flat">
+          <div class="muted small">💡 <strong>How it works:</strong> OutreachAI checks every 12 hours for leads that were sent an email but haven't replied. It then generates a short, friendly follow-up and sends it automatically via Gmail.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESSING VIEW -->
+    <section id="processingView" class="card hidden">
+      <h3>⚙️ Processing Campaign</h3>
+      <div class="card-flat" style="margin-top:10px;">
+        <strong>🔍 Researching Companies</strong>
+        <div class="progress"><div id="scrapeBar"></div></div>
+        <div id="scrapeFeed" class="feed"></div>
+      </div>
+      <div class="card-flat">
+        <strong>✍️ Writing Personalised Emails</strong>
+        <div class="progress"><div id="genBar"></div></div>
+        <div id="genFeed" class="feed"></div>
+      </div>
+      <div id="overallProgress" class="muted small" style="margin-top:6px; text-align:center;">0 of 0 complete</div>
+    </section>
+
+    <!-- RESULTS VIEW -->
+    <section id="resultsView" class="hidden">
+      <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <h2 id="resultsTitle"></h2>
+          <div id="resultsStats" class="muted small"></div>
+        </div>
+        <div class="flex flex-wrap">
+          <button id="enrichResultsBtn" class="secondary" onclick="enrichEmailsResults()">📧 Find Missing Emails</button>
+          <button id="exportBtn" class="secondary">📥 Export CSV</button>
+          <button id="sendAllBtn">📧 Send All</button>
+        </div>
+      </div>
+      <div id="leadsList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- GMAIL MODAL -->
+<div id="gmailModal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Connect Gmail</h3>
+    <div class="card-flat" style="margin:10px 0;">
+      <div class="muted small" style="white-space:pre-wrap; line-height:1.8;">Step 1: Go to console.cloud.google.com
 Step 2: Create a new project
 Step 3: Enable the Gmail API
-Step 4: Go to Credentials → Create OAuth 2.0 Client ID
+Step 4: Credentials → Create OAuth 2.0 Client ID
 Step 5: Application type: Desktop App
 Step 6: Download credentials.json
-Step 7: Place credentials.json in the app folder
-Step 8: Click Connect below</pre>
-      <div style="display:flex; gap:8px; justify-content:flex-end;">
-        <button id="closeGmailModal" class="secondary">Cancel</button>
-        <button id="startGmailConnect">🔗 Connect Gmail</button>
-      </div>
+Step 7: Place credentials.json in your app folder
+Step 8: Click Connect below</div>
+    </div>
+    <div class="flex" style="justify-content:flex-end;">
+      <button id="closeGmailModal" class="secondary">Cancel</button>
+      <button id="startGmailConnect">🔗 Connect Gmail</button>
     </div>
   </div>
+</div>
 
-  <div id="deleteModal" class="modal hidden">
-    <div class="modal-card">
-      <h3>Delete Campaign</h3>
-      <p class="muted">Are you sure? This cannot be undone.</p>
-      <div style="display:flex; gap:8px; justify-content:flex-end;">
-        <button id="cancelDelete" class="secondary">Cancel</button>
-        <button id="confirmDelete">Delete</button>
-      </div>
+<!-- DELETE MODAL -->
+<div id="deleteModal" class="modal hidden">
+  <div class="modal-card">
+    <h3>Delete Campaign</h3>
+    <p class="muted" style="margin-top:8px;">Are you sure? This cannot be undone.</p>
+    <div class="flex" style="justify-content:flex-end; margin-top:14px;">
+      <button id="cancelDelete" class="secondary">Cancel</button>
+      <button id="confirmDelete" class="danger">Delete</button>
     </div>
   </div>
+</div>
 
-  <div id="toastWrap" class="toast-wrap"></div>
+<!-- TOASTS -->
+<div id="toastWrap" class="toast-wrap"></div>
 
-  <script>
-    const state = { campaigns: [], activeCampaign: null, deletingId: null, processing: false };
-    const socket = io();
+<script>
+  const state = {
+    campaigns: [],
+    activeCampaign: null,
+    deletingId: null,
+    processing: false,
+    activeTab: 'finder'
+  };
+  const socket = io();
 
-    const views = ["welcomeView", "newCampaignView", "setupView", "processingView", "resultsView"];
-    const showView = (id) => views.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
-    const toast = (msg) => {
-      const node = document.createElement("div");
-      node.className = "toast";
-      node.textContent = msg;
-      document.getElementById("toastWrap").appendChild(node);
-      setTimeout(() => node.remove(), 3000);
-    };
+  // ── Utils ────────────────────────────────────────────────
+  const views = ["welcomeView","newCampaignView","setupView","processingView","resultsView"];
+  const showView = (id) => views.forEach(v => document.getElementById(v).classList.toggle("hidden", v !== id));
 
-    async function api(url, method = "GET", body = null, isForm = false) {
-      const res = await fetch(url, {
-        method,
-        headers: isForm ? undefined : { "Content-Type": "application/json" },
-        body: body ? (isForm ? body : JSON.stringify(body)) : undefined
-      });
-      return res.json();
+  function toast(msg, type="info") {
+    const node = document.createElement("div");
+    node.className = "toast";
+    node.textContent = msg;
+    document.getElementById("toastWrap").appendChild(node);
+    setTimeout(() => node.remove(), 3500);
+  }
+
+  async function api(url, method="GET", body=null, isForm=false) {
+    const res = await fetch(url, {
+      method,
+      headers: isForm ? undefined : {"Content-Type":"application/json"},
+      body: body ? (isForm ? body : JSON.stringify(body)) : undefined
+    });
+    return res.json();
+  }
+
+  function switchTab(tab) {
+    state.activeTab = tab;
+    ["finder","upload","followup"].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle("hidden", t !== tab);
+    });
+    document.querySelectorAll(".tab-btn").forEach((btn, i) => {
+      btn.classList.toggle("active", ["finder","upload","followup"][i] === tab);
+    });
+  }
+
+  // ── Campaigns ────────────────────────────────────────────
+  function renderCampaigns() {
+    const wrap = document.getElementById("campaignList");
+    wrap.innerHTML = "";
+    if (!state.campaigns.length) {
+      wrap.innerHTML = `<div class="muted small" style="margin-top:8px;">No campaigns yet</div>`;
     }
-
-    function renderCampaigns() {
-      const wrap = document.getElementById("campaignList");
-      wrap.innerHTML = "";
-      if (!state.campaigns.length) {
-        wrap.innerHTML = `<div class="muted" style="margin-top:8px;">No campaigns yet</div>`;
-      }
-      state.campaigns.forEach(c => {
-        const item = document.createElement("div");
-        item.className = `card campaign-item ${state.activeCampaign && c.id === state.activeCampaign.id ? "active" : ""}`;
-        item.innerHTML = `<strong>${c.name}</strong><div class="muted">${(c.leads || []).length} leads • ${new Date(c.created_at).toLocaleDateString()}</div><div class="muted">${c.status || "draft"}</div><button class="secondary" data-del="${c.id}" style="margin-top:8px;">Delete</button>`;
-        item.onclick = (e) => {
-          if (e.target.dataset.del) return;
-          if (state.processing) return toast("Cannot navigate away while processing");
-          loadCampaign(c.id);
-        };
-        item.querySelector("[data-del]")?.addEventListener("click", () => {
-          state.deletingId = c.id;
-          document.getElementById("deleteModal").classList.remove("hidden");
-        });
-        wrap.appendChild(item);
-      });
-
-      const totalLeads = state.campaigns.reduce((n, c) => n + ((c.leads || []).length), 0);
-      document.getElementById("statCampaigns").textContent = String(state.campaigns.length);
-      document.getElementById("statLeads").textContent = String(totalLeads);
-    }
-
-    function renderSetup(c) {
-      document.getElementById("setupName").textContent = c.name;
-      document.getElementById("leadsReady").textContent = `${(c.leads || []).length} leads ready`;
-      const preview = document.getElementById("leadsPreview");
-      preview.innerHTML = (c.leads || []).slice(0, 8).map(l => `${l.name} | ${l.company} | ${l.website} | ${l.role || "Decision Maker"} | ${l.email || ""}`).join("<br>") || "<span class='muted'>No leads uploaded yet.</span>";
-      document.getElementById("runCampaignBtn").disabled = !(c.leads || []).length;
-      showView("setupView");
-    }
-
-    function statusLabel(lead) {
-      if (lead.sent) return "✅ Sent";
-      if (lead.generation_status === "generated") return "🟢 Ready";
-      if (lead.generation_status === "failed" || lead.scrape_status === "failed") return "🔴 Failed";
-      if (lead.generation_status === "pending" && lead.scrape_status === "pending") return "⚪ Pending";
-      return "🟡 Generating";
-    }
-
-    function renderResults(c) {
+    state.campaigns.forEach(c => {
       const leads = c.leads || [];
-      document.getElementById("resultsTitle").textContent = c.name;
-      document.getElementById("resultsStats").textContent = `${leads.length} leads | ${leads.filter(l => l.generation_status === "generated").length} generated | ${leads.filter(l => l.sent).length} sent`;
-      const list = document.getElementById("leadsList");
-      list.innerHTML = "";
-      leads.forEach(lead => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="lead-row">
-            <div><strong>${lead.company}</strong><div class="muted">${lead.name} ${lead.role ? "• " + lead.role : ""}</div></div>
-            <div>${lead.subject || "(no subject)"}</div>
-            <div><span class="status">${statusLabel(lead)}</span></div>
+      const sent = leads.filter(l => l.sent).length;
+      const item = document.createElement("div");
+      item.className = `card campaign-item ${state.activeCampaign && c.id === state.activeCampaign.id ? "active" : ""}`;
+      item.innerHTML = `
+        <div class="camp-name">${c.name}</div>
+        <div class="camp-meta">${leads.length} leads • ${sent} sent</div>
+        <div class="camp-meta">${new Date(c.created_at).toLocaleDateString()} • ${c.status || "draft"}</div>
+        <button class="secondary" data-del="${c.id}" style="margin-top:8px; font-size:11px; padding:5px 8px;">🗑 Delete</button>`;
+      item.onclick = (e) => {
+        if (e.target.dataset.del) return;
+        if (state.processing) return toast("Cannot navigate away while processing");
+        loadCampaign(c.id);
+      };
+      item.querySelector("[data-del]")?.addEventListener("click", () => {
+        state.deletingId = c.id;
+        document.getElementById("deleteModal").classList.remove("hidden");
+      });
+      wrap.appendChild(item);
+    });
+
+    const totalLeads = state.campaigns.reduce((n, c) => n + (c.leads || []).length, 0);
+    const totalSent  = state.campaigns.reduce((n, c) => n + (c.leads || []).filter(l => l.sent).length, 0);
+    document.getElementById("statCampaigns").textContent = state.campaigns.length;
+    document.getElementById("statLeads").textContent = totalLeads;
+    document.getElementById("statSent").textContent = totalSent;
+  }
+
+  function renderSetup(c) {
+    document.getElementById("setupName").textContent = c.name;
+    document.getElementById("setupMeta").textContent = c.offer?.slice(0,80) + (c.offer?.length > 80 ? "…" : "");
+    const leads = c.leads || [];
+    document.getElementById("leadCountBadge").textContent = `${leads.length} leads loaded`;
+
+    // preview in upload tab
+    const preview = document.getElementById("leadsPreview");
+    if (leads.length) {
+      preview.classList.remove("hidden");
+      preview.innerHTML = `<div class="muted small mb">${leads.length} leads loaded:</div>` +
+        leads.slice(0,6).map(l => `<div class="small" style="padding:3px 0; border-bottom:1px solid var(--border);">${l.name} | ${l.company} | ${l.email || "<span style='color:var(--warning)'>no email</span>"}</div>`).join("") +
+        (leads.length > 6 ? `<div class="muted small" style="margin-top:4px;">+${leads.length - 6} more…</div>` : "");
+    } else {
+      preview.classList.add("hidden");
+    }
+    document.getElementById("runCampaignBtn").disabled = !leads.length;
+
+    // preview in finder tab
+    renderFinderPreview(leads);
+
+    showView("setupView");
+  }
+
+  function renderFinderPreview(leads) {
+    const wrap = document.getElementById("leadsPreviewFinder");
+    const btn  = document.getElementById("runCampaignBtnFinder");
+    if (!leads.length) { wrap.innerHTML = ""; btn.classList.add("hidden"); return; }
+    btn.classList.remove("hidden");
+    wrap.innerHTML = `
+      <div class="card-flat">
+        <div class="muted small mb">${leads.length} leads ready — <span style="color:var(--warning)">${leads.filter(l=>!l.email).length} missing email</span></div>
+        ${leads.slice(0,8).map(l => `
+          <div class="flex small" style="padding:4px 0; border-bottom:1px solid #1a1a1a;">
+            <span style="flex:1; font-weight:500;">${l.company}</span>
+            <span style="flex:1; color:var(--text2);">${l.website}</span>
+            <span style="flex:1; color:${l.email ? 'var(--success)' : 'var(--warning)'};">${l.email || "no email"}</span>
+          </div>`).join("")}
+        ${leads.length > 8 ? `<div class="muted small" style="margin-top:4px;">+${leads.length - 8} more…</div>` : ""}
+      </div>`;
+  }
+
+  function statusLabel(lead) {
+    if (lead.sent && lead.followup_sent) return "✅ Sent + Followed Up";
+    if (lead.sent) return "✅ Sent";
+    if (lead.generation_status === "generated") return "🟢 Ready";
+    if (lead.generation_status === "failed" || lead.scrape_status === "failed") return "🔴 Failed";
+    if (lead.scrape_status === "pending" && lead.generation_status === "pending") return "⚪ Pending";
+    return "🟡 Generating";
+  }
+
+  function renderResults(c) {
+    const leads = c.leads || [];
+    document.getElementById("resultsTitle").textContent = c.name;
+    document.getElementById("resultsStats").textContent =
+      `${leads.length} leads · ${leads.filter(l=>l.generation_status==="generated").length} generated · ${leads.filter(l=>l.sent).length} sent · ${leads.filter(l=>l.followup_sent).length} followed up`;
+
+    const list = document.getElementById("leadsList");
+    list.innerHTML = "";
+    leads.forEach(lead => {
+      const card = document.createElement("div");
+      card.className = "lead-card";
+      card.innerHTML = `
+        <div class="lead-top">
+          <div>
+            <div style="font-weight:600;">${lead.company}</div>
+            <div class="muted small">${lead.name}${lead.role ? " · " + lead.role : ""}</div>
           </div>
-          <details style="margin-top:8px;">
-            <summary>Expand</summary>
-            <div class="muted" style="margin:8px 0 4px;">Subject</div>
-            <input data-subject value="${(lead.subject || "").replaceAll('"','&quot;')}" />
-            <div class="muted" style="margin:8px 0 4px;">Body</div>
+          <div class="small" style="color:var(--text2);">${lead.subject || "(no subject)"}</div>
+          <div><span class="status-pill">${statusLabel(lead)}</span></div>
+        </div>
+        <details style="margin-top:10px;">
+          <summary style="cursor:pointer; color:var(--text2); font-size:13px;">▶ Expand email</summary>
+          <div style="margin-top:10px;">
+            <label>Subject</label>
+            <input data-subject value="${(lead.subject||"").replaceAll('"','&quot;')}" />
+            <label>Email Body</label>
             <textarea data-body>${lead.generated_email || ""}</textarea>
-            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+            <div class="flex flex-wrap mt">
               <button data-regenerate>🔄 Regenerate</button>
               <button data-copy class="secondary">📋 Copy</button>
-              <button data-send>📧 Send</button>
+              <button data-send>${lead.sent ? "✅ Resend" : "📧 Send"}</button>
+              ${lead.sent ? `<span class="muted small" style="align-self:center;">Sent ${lead.sent_at ? new Date(lead.sent_at).toLocaleDateString() : ""}</span>` : ""}
+              ${lead.followup_sent ? `<span class="muted small" style="align-self:center; color:var(--success);">🔁 Follow-up sent</span>` : ""}
             </div>
-            <details style="margin-top:8px;"><summary>🔍 View research</summary><div class="muted">${lead.scraped_content || "No scraped content"}</div></details>
-          </details>`;
+            <details style="margin-top:10px;">
+              <summary style="cursor:pointer; color:var(--text2); font-size:12px;">🔍 View website research</summary>
+              <div class="card-flat muted small" style="margin-top:6px; white-space:pre-wrap;">${lead.scraped_content || "No scraped content available."}</div>
+            </details>
+          </div>
+        </details>`;
 
-        card.querySelector("[data-copy]").onclick = async () => {
-          await navigator.clipboard.writeText(card.querySelector("[data-body]").value || "");
-          toast("📋 Email copied to clipboard");
-        };
-        card.querySelector("[data-regenerate]").onclick = async () => {
-          const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/regenerate`, "POST", {});
-          if (res.success) {
-            toast("✅ Email regenerated");
-            await loadCampaign(c.id);
-          } else toast("❌ " + (res.error || "Regeneration failed"));
-        };
-        card.querySelector("[data-send]").onclick = async () => {
-          const entered = prompt("Recipient email:", lead.email || "");
-          if (entered === null) return;
-          lead.subject = card.querySelector("[data-subject]").value;
-          lead.generated_email = card.querySelector("[data-body]").value;
-          const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/send`, "POST", { email: entered });
-          if (res.success) { toast(`✅ Sent to ${entered}`); await loadCampaign(c.id); } else toast("❌ " + (res.error || "Send failed"));
-        };
-        list.appendChild(card);
-      });
-      showView("resultsView");
-    }
-
-    async function loadCampaigns() {
-      const data = await api("/api/campaigns");
-      state.campaigns = data.campaigns || [];
-      renderCampaigns();
-    }
-
-    async function loadCampaign(id) {
-      const data = await api(`/api/campaign/${id}`);
-      state.activeCampaign = data.campaign;
-      renderCampaigns();
-      const c = state.activeCampaign;
-      if (!c) return showView("welcomeView");
-      if ((c.status === "completed") || (c.leads || []).some(l => l.generated_email)) return renderResults(c);
-      if (c.status === "running") { showView("processingView"); state.processing = true; return; }
-      return renderSetup(c);
-    }
-
-    async function checkGmail() {
-      const data = await api("/api/gmail/status");
-      const badge = document.getElementById("gmailBadge");
-      const btn = document.getElementById("connectGmailBtn");
-      if (data.connected) {
-        badge.textContent = "🟢 Connected";
-        badge.className = "badge connected";
-        btn.classList.add("hidden");
-      } else {
-        badge.textContent = "🔴 Not Connected";
-        badge.className = "badge not-connected";
-        btn.classList.remove("hidden");
-      }
-    }
-
-    socket.on("scrape_progress", (evt) => {
-      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
-      const pct = evt.total ? (evt.current / evt.total) * 100 : 0;
-      document.getElementById("scrapeBar").style.width = `${pct}%`;
-      const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
-      document.getElementById("scrapeFeed").innerHTML = `${icon} ${evt.company} — ${evt.status}<br>` + document.getElementById("scrapeFeed").innerHTML;
-      document.getElementById("overallProgress").textContent = `${evt.current} of ${evt.total} complete`;
-    });
-
-    socket.on("generation_progress", (evt) => {
-      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
-      const pct = evt.total ? (evt.current / evt.total) * 100 : 0;
-      document.getElementById("genBar").style.width = `${pct}%`;
-      const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
-      const preview = evt.preview ? ` — ${evt.preview}` : "";
-      document.getElementById("genFeed").innerHTML = `${icon} ${evt.company} — ${evt.status}${preview}<br>` + document.getElementById("genFeed").innerHTML;
-      document.getElementById("overallProgress").textContent = `${evt.current} of ${evt.total} complete`;
-    });
-
-    socket.on("campaign_complete", async (evt) => {
-      if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
-      state.processing = false;
-      toast("✅ Campaign complete");
-      await loadCampaign(state.activeCampaign.id);
-      await loadCampaigns();
-    });
-
-    document.getElementById("newCampaignBtn").onclick = () => { if (!state.processing) showView("newCampaignView"); };
-    document.getElementById("createFirstBtn").onclick = () => showView("newCampaignView");
-    document.getElementById("createCampaignSubmit").onclick = async () => {
-      const body = {
-        name: document.getElementById("campaignName").value || "Untitled Campaign",
-        offer: document.getElementById("offerInput").value,
-        tone_instructions: document.getElementById("toneInput").value,
-        subject_template: document.getElementById("subjectTemplate").value
+      card.querySelector("[data-copy]").onclick = async () => {
+        await navigator.clipboard.writeText(card.querySelector("[data-body]").value || "");
+        toast("📋 Copied to clipboard");
       };
-      const res = await api("/api/campaign/create", "POST", body);
-      if (res.success) {
-        toast("✅ Campaign created");
-        await loadCampaigns();
-        await loadCampaign(res.campaign_id);
-      }
-    };
 
-    document.getElementById("csvInput").addEventListener("change", async (e) => {
-      if (!state.activeCampaign || !e.target.files?.[0]) return;
-      const fd = new FormData();
-      fd.append("file", e.target.files[0]);
-      const res = await api(`/api/campaign/${state.activeCampaign.id}/upload`, "POST", fd, true);
-      if (res.success) { toast(`✅ ${res.leads_count} leads uploaded`); await loadCampaign(state.activeCampaign.id); await loadCampaigns(); }
-      else toast("❌ " + (res.error || "Upload failed"));
+      card.querySelector("[data-regenerate]").onclick = async () => {
+        const btn = card.querySelector("[data-regenerate]");
+        btn.innerHTML = `<span class="spinner"></span> Regenerating…`;
+        btn.disabled = true;
+        const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/regenerate`, "POST", {});
+        if (res.success) { toast("✅ Email regenerated"); await loadCampaign(c.id); }
+        else toast("❌ " + (res.error || "Failed"));
+      };
+
+      card.querySelector("[data-send]").onclick = async () => {
+        const entered = prompt("Recipient email:", lead.email || "");
+        if (entered === null) return;
+        const subject = card.querySelector("[data-subject]").value;
+        const body    = card.querySelector("[data-body]").value;
+        lead.subject = subject;
+        lead.generated_email = body;
+        const res = await api(`/api/campaign/${c.id}/lead/${lead.id}/send`, "POST", {email: entered});
+        if (res.success) { toast(`✅ Sent to ${entered}`); await loadCampaign(c.id); }
+        else toast("❌ " + (res.error || "Send failed"));
+      };
+
+      list.appendChild(card);
     });
+    showView("resultsView");
+  }
 
-    document.getElementById("runCampaignBtn").onclick = async () => {
-      if (!state.activeCampaign) return;
-      state.processing = true;
-      document.getElementById("scrapeFeed").innerHTML = "";
-      document.getElementById("genFeed").innerHTML = "";
-      showView("processingView");
-      const res = await api(`/api/campaign/${state.activeCampaign.id}/run`, "POST", {});
-      if (!res.success) { state.processing = false; toast("❌ " + (res.error || "Failed to start")); }
-    };
+  // ── Lead Finder ──────────────────────────────────────────
+  async function findLeads() {
+    if (!state.activeCampaign) return toast("Create a campaign first");
+    const query = document.getElementById("leadFinderQuery").value.trim();
+    const count = parseInt(document.getElementById("leadFinderCount").value) || 10;
+    if (!query) return toast("Enter a search query");
 
-    document.getElementById("sampleCsvBtn").onclick = () => {
-      const content = `name,company,website,role,email\nJohn Smith,Acme Corp,https://acmecorp.com,CEO,john@acmecorp.com\nSarah Jones,TechStart,https://techstart.io,Founder,sarah@techstart.io\nMike Chen,GrowthLab,https://growthlab.co,Marketing Director,`;
-      const blob = new Blob([content], { type: "text/csv" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "sample_leads.csv";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    };
+    const btn = document.getElementById("findLeadsBtn");
+    const status = document.getElementById("finderStatus");
+    btn.innerHTML = `<span class="spinner"></span> Searching…`;
+    btn.disabled = true;
+    status.textContent = "🔍 Searching Google for companies…";
 
-    document.getElementById("exportBtn").onclick = () => {
-      if (!state.activeCampaign) return;
-      window.location.href = `/api/campaign/${state.activeCampaign.id}/export`;
-    };
+    try {
+      const res = await api("/api/leads/find", "POST", {query, count});
+      if (!res.success) { status.textContent = "❌ " + res.error; return; }
 
-    document.getElementById("sendAllBtn").onclick = async () => {
-      if (!state.activeCampaign) return;
-      const res = await api(`/api/campaign/${state.activeCampaign.id}/send-all`, "POST", {});
-      if (res.success) toast(`✅ Sent ${res.sent}, failed ${res.failed}`);
-      else toast("❌ " + (res.error || "Send all failed"));
-      await loadCampaign(state.activeCampaign.id);
-    };
+      status.textContent = `✅ Found ${res.leads.length} companies. Uploading to campaign…`;
 
-    document.getElementById("connectGmailBtn").onclick = () => document.getElementById("gmailModal").classList.remove("hidden");
-    document.getElementById("closeGmailModal").onclick = () => document.getElementById("gmailModal").classList.add("hidden");
-    document.getElementById("startGmailConnect").onclick = () => window.location.href = "/api/gmail/auth";
+      // Convert to CSV blob and upload
+      const headers = ["name","company","website","role","email"];
+      const rows = res.leads.map(l => `${l.name},${l.company},${l.website},${l.role},${l.email}`);
+      const csv = [headers.join(","), ...rows].join("\n");
+      const blob = new Blob([csv], {type:"text/csv"});
+      const fd = new FormData();
+      fd.append("file", blob, "found_leads.csv");
 
-    document.getElementById("cancelDelete").onclick = () => document.getElementById("deleteModal").classList.add("hidden");
-    document.getElementById("confirmDelete").onclick = async () => {
-      if (!state.deletingId) return;
-      const res = await fetch(`/api/campaign/${state.deletingId}`, { method: "DELETE" }).then(r => r.json());
-      if (res.success) {
-        toast("✅ Campaign deleted");
-        if (state.activeCampaign && state.activeCampaign.id === state.deletingId) state.activeCampaign = null;
+      const up = await api(`/api/campaign/${state.activeCampaign.id}/upload`, "POST", fd, true);
+      if (up.success) {
+        toast(`✅ ${up.leads_count} leads added!`);
+        status.textContent = `✅ ${up.leads_count} leads ready. You can now find emails or generate emails.`;
+        await loadCampaign(state.activeCampaign.id);
         await loadCampaigns();
-        showView(state.activeCampaign ? "setupView" : "welcomeView");
-      } else toast("❌ " + (res.error || "Delete failed"));
-      document.getElementById("deleteModal").classList.add("hidden");
-    };
+      } else {
+        status.textContent = "❌ " + up.error;
+      }
+    } finally {
+      btn.innerHTML = "🔍 Find";
+      btn.disabled = false;
+    }
+  }
 
-    (async function init() {
-      await checkGmail();
+  async function enrichEmails() {
+    if (!state.activeCampaign) return toast("No active campaign");
+    const btn = document.getElementById("enrichBtn");
+    const status = document.getElementById("enrichStatus");
+    btn.innerHTML = `<span class="spinner"></span> Finding emails…`;
+    btn.disabled = true;
+    status.textContent = "📧 Guessing emails from company domains…";
+    try {
+      const res = await api(`/api/campaign/${state.activeCampaign.id}/enrich-emails`, "POST", {});
+      if (res.success) {
+        status.textContent = `✅ Found/guessed ${res.enriched} email addresses`;
+        toast(`📧 Enriched ${res.enriched} emails`);
+        await loadCampaign(state.activeCampaign.id);
+      } else {
+        status.textContent = "❌ " + res.error;
+      }
+    } finally {
+      btn.innerHTML = "📧 Find Missing Emails";
+      btn.disabled = false;
+    }
+  }
+
+  async function enrichEmailsResults() {
+    if (!state.activeCampaign) return;
+    const res = await api(`/api/campaign/${state.activeCampaign.id}/enrich-emails`, "POST", {});
+    if (res.success) { toast(`📧 Enriched ${res.enriched} emails`); await loadCampaign(state.activeCampaign.id); }
+    else toast("❌ " + res.error);
+  }
+
+  // ── Follow-up ────────────────────────────────────────────
+  async function startFollowupScheduler() {
+    const days = parseInt(document.getElementById("followupDays").value);
+    const res = await api("/api/followups/start-scheduler", "POST", {days});
+    const status = document.getElementById("followupStatus");
+    if (res.success) {
+      status.textContent = `✅ Auto follow-up enabled — will follow up after ${days} day(s) if no reply`;
+      toast("✅ Follow-up scheduler started");
+    } else {
+      status.textContent = "❌ Failed to start scheduler";
+    }
+  }
+
+  async function runFollowupsNow() {
+    const days = parseInt(document.getElementById("followupDays").value);
+    const status = document.getElementById("followupStatus");
+    status.textContent = "🔁 Checking for leads to follow up…";
+    const res = await api("/api/followups/run", "POST", {days});
+    if (res.success) {
+      status.textContent = `✅ Sent ${res.followups_sent} follow-up emails`;
+      toast(`🔁 ${res.followups_sent} follow-ups sent`);
       await loadCampaigns();
-      showView("welcomeView");
-    })();
-  </script>
+    } else {
+      status.textContent = "❌ " + (res.error || "Failed");
+    }
+  }
+
+  // ── Campaign run ─────────────────────────────────────────
+  async function runCampaign() {
+    if (!state.activeCampaign) return;
+    state.processing = true;
+    document.getElementById("scrapeFeed").innerHTML = "";
+    document.getElementById("genFeed").innerHTML = "";
+    document.getElementById("scrapeBar").style.width = "0%";
+    document.getElementById("genBar").style.width = "0%";
+    showView("processingView");
+    const res = await api(`/api/campaign/${state.activeCampaign.id}/run`, "POST", {});
+    if (!res.success) { state.processing = false; showView("setupView"); toast("❌ " + (res.error || "Failed to start")); }
+  }
+
+  // ── Load ─────────────────────────────────────────────────
+  async function loadCampaigns() {
+    const data = await api("/api/campaigns");
+    state.campaigns = data.campaigns || [];
+    renderCampaigns();
+  }
+
+  async function loadCampaign(id) {
+    const data = await api(`/api/campaign/${id}`);
+    state.activeCampaign = data.campaign;
+    renderCampaigns();
+    const c = state.activeCampaign;
+    if (!c) return showView("welcomeView");
+    if (c.status === "running") { showView("processingView"); state.processing = true; return; }
+    if (c.status === "completed" || (c.leads||[]).some(l => l.generated_email)) return renderResults(c);
+    return renderSetup(c);
+  }
+
+  // ── Gmail ────────────────────────────────────────────────
+  async function checkGmail() {
+    const data = await api("/api/gmail/status");
+    const badge = document.getElementById("gmailBadge");
+    const btn   = document.getElementById("connectGmailBtn");
+    if (data.connected) {
+      badge.textContent = "🟢 Connected"; badge.className = "badge connected"; btn.classList.add("hidden");
+    } else {
+      badge.textContent = "🔴 Not Connected"; badge.className = "badge not-connected"; btn.classList.remove("hidden");
+    }
+  }
+
+  // ── SocketIO ─────────────────────────────────────────────
+  socket.on("scrape_progress", (evt) => {
+    if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+    const pct = evt.total ? (evt.current / evt.total * 100) : 0;
+    document.getElementById("scrapeBar").style.width = `${pct}%`;
+    const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
+    const feed = document.getElementById("scrapeFeed");
+    feed.innerHTML = `<div>${icon} ${evt.company} — ${evt.status}</div>` + feed.innerHTML;
+    document.getElementById("overallProgress").textContent = `Scraping: ${evt.current} of ${evt.total}`;
+  });
+
+  socket.on("generation_progress", (evt) => {
+    if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+    const pct = evt.total ? (evt.current / evt.total * 100) : 0;
+    document.getElementById("genBar").style.width = `${pct}%`;
+    const icon = evt.status === "done" ? "✅" : evt.status === "failed" ? "❌" : "⏳";
+    const preview = evt.preview ? ` — ${evt.preview}` : "";
+    const feed = document.getElementById("genFeed");
+    feed.innerHTML = `<div>${icon} ${evt.company}${preview}</div>` + feed.innerHTML;
+    document.getElementById("overallProgress").textContent = `Writing emails: ${evt.current} of ${evt.total}`;
+  });
+
+  socket.on("campaign_complete", async (evt) => {
+    if (!state.activeCampaign || evt.campaign_id !== state.activeCampaign.id) return;
+    state.processing = false;
+    toast("✅ All emails generated!");
+    await loadCampaign(state.activeCampaign.id);
+    await loadCampaigns();
+  });
+
+  // ── Events ───────────────────────────────────────────────
+  document.getElementById("newCampaignBtn").onclick = () => { if (!state.processing) { state.activeCampaign = null; renderCampaigns(); showView("newCampaignView"); }};
+  document.getElementById("createFirstBtn").onclick = () => showView("newCampaignView");
+
+  document.getElementById("createCampaignSubmit").onclick = async () => {
+    const body = {
+      name: document.getElementById("campaignName").value || "Untitled Campaign",
+      offer: document.getElementById("offerInput").value,
+      tone_instructions: document.getElementById("toneInput").value,
+      subject_template: document.getElementById("subjectTemplate").value
+    };
+    const res = await api("/api/campaign/create", "POST", body);
+    if (res.success) {
+      toast("✅ Campaign created");
+      await loadCampaigns();
+      await loadCampaign(res.campaign_id);
+      switchTab("finder");
+    }
+  };
+
+  document.getElementById("csvInput").addEventListener("change", async (e) => {
+    if (!state.activeCampaign || !e.target.files?.[0]) return;
+    const fd = new FormData();
+    fd.append("file", e.target.files[0]);
+    const res = await api(`/api/campaign/${state.activeCampaign.id}/upload`, "POST", fd, true);
+    if (res.success) { toast(`✅ ${res.leads_count} leads uploaded`); await loadCampaign(state.activeCampaign.id); await loadCampaigns(); }
+    else toast("❌ " + (res.error || "Upload failed"));
+  });
+
+  document.getElementById("sampleCsvBtn").onclick = () => {
+    const content = `name,company,website,role,email\nJohn Smith,Acme Corp,https://acmecorp.com,CEO,john@acmecorp.com\nSarah Jones,TechStart,https://techstart.io,Founder,\nMike Chen,GrowthLab,https://growthlab.co,Marketing Director,mike@growthlab.co`;
+    const blob = new Blob([content], {type:"text/csv"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "sample_leads.csv"; a.click(); URL.revokeObjectURL(a.href);
+  };
+
+  document.getElementById("exportBtn").onclick = () => { if (state.activeCampaign) window.location.href = `/api/campaign/${state.activeCampaign.id}/export`; };
+
+  document.getElementById("sendAllBtn").onclick = async () => {
+    if (!state.activeCampaign) return;
+    const res = await api(`/api/campaign/${state.activeCampaign.id}/send-all`, "POST", {});
+    if (res.success) toast(`✅ Sent ${res.sent}, failed ${res.failed}`);
+    else toast("❌ " + (res.error || "Failed"));
+    await loadCampaign(state.activeCampaign.id);
+  };
+
+  document.getElementById("connectGmailBtn").onclick = () => document.getElementById("gmailModal").classList.remove("hidden");
+  document.getElementById("closeGmailModal").onclick = () => document.getElementById("gmailModal").classList.add("hidden");
+  document.getElementById("startGmailConnect").onclick = () => window.location.href = "/api/gmail/auth";
+
+  document.getElementById("cancelDelete").onclick = () => document.getElementById("deleteModal").classList.add("hidden");
+  document.getElementById("confirmDelete").onclick = async () => {
+    if (!state.deletingId) return;
+    const res = await fetch(`/api/campaign/${state.deletingId}`, {method:"DELETE"}).then(r=>r.json());
+    if (res.success) {
+      toast("✅ Campaign deleted");
+      if (state.activeCampaign?.id === state.deletingId) { state.activeCampaign = null; showView("welcomeView"); }
+      await loadCampaigns();
+    } else toast("❌ " + (res.error||"Delete failed"));
+    document.getElementById("deleteModal").classList.add("hidden");
+  };
+
+  // ── Init ─────────────────────────────────────────────────
+  (async function init() {
+    await checkGmail();
+    await loadCampaigns();
+    showView("welcomeView");
+  })();
+</script>
 </body>
 </html>
